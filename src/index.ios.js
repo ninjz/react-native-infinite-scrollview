@@ -4,6 +4,8 @@ import React, {
   ScrollView,
 } from 'react-native';
 
+
+
 export default class InfiniteScrollView extends Component {
   constructor(props) {
     super(props);
@@ -55,10 +57,12 @@ export default class InfiniteScrollView extends Component {
     return (
       <ScrollView
         {...this.props}
-        ref={(scrollView) => {this._scrollView = scrollView}}
+        ref={(scrollView) => {
+          this._scrollView = scrollView;
+        }}
         onLayout={(e) => this._layoutChanged(e)}
         pagingEnabled={true}
-        onMomentumScrollEnd={(e) => this._onMomentumScrollEnd(e)}>
+        onMomentumScrollEnd={this._onMomentumScrollEnd.bind(this)}>
         {pages}
       </ScrollView>
     );
@@ -81,21 +85,35 @@ export default class InfiniteScrollView extends Component {
     var currentIndex = this.state.index;
     var index = this.state.index + scrollIndex - Math.min(this._offscreenPages, this.state.index - this.state.fromIndex) - Math.max(0, this._offscreenPages + this.state.index - this.state.toIndex);
 
-    if(index !== currentIndex && this.props.onPageIndexChange) {
-      this.props.onPageIndexChange(index);
+    if (index !== currentIndex) {
+      if (this.props.onNext && this.props.onPrev) {
+        const steps = index - currentIndex;
+        if (steps > 0) {
+          for (var i = 0; i < steps; i++) {
+            this.props.onNext();
+          }
+        } else { // negative, so go back
+          for (var i = 0; i < Math.abs(steps); i++) {
+            this.props.onPrev();
+          }
+        }
+      }
+
+      this.props.onPageIndexChange && this.props.onPageIndexChange(index);
     }
 
-    this.setState({index: index});
+    this.setState({
+      index: index
+    });
 
-    if(this.props.onMomentumScrollEnd) {
-      this.props.onMomentumScrollEnd(event);
-    }
+    this.props.onMomentumScrollEnd && this.props.onMomentumScrollEnd(event, this.state, this)
   }
   _pagesRange(state) {
     var range = {};
     range.from = Math.max(state.index - this._offscreenPages, state.fromIndex);
     range.to = Math.min(range.from + 2 * this._offscreenPages, state.toIndex);
     range.from = Math.min(range.from, range.to - 2 * this._offscreenPages);
+
     return range;
   }
   _createPages(range) {
