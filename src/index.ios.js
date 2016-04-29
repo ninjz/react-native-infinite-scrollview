@@ -26,10 +26,10 @@ export default class InfiniteScrollView extends Component {
     }
   }
   shouldComponentUpdate(nextProps, nextState) {
-    var index = this._index(nextProps);
+    var index = this._index(nextProps)
     var range = this._pagesRange(nextState);
     return (
-      nextState.size !== this.state.size ||  
+      nextState.size !== this.state.size ||
       range.to !== this._renderedRange.to || range.from !== this._renderedRange.from ||
       this.state.index !== index
     );
@@ -38,16 +38,22 @@ export default class InfiniteScrollView extends Component {
     var scrollTo = {animated: false}
     if(this.props.horizontal) scrollTo.x = (this.state.index - this._renderedRange.from) * this.state.size.width;
     else scrollTo.y = (this.state.index - this._renderedRange.from) * this.state.size.height;
-    this._scrollView.scrollTo(scrollTo);    
+    this._scrollView.scrollTo(scrollTo);
+  }
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      toIndex: nextProps.toIndex || this.props.toIndex,
+      fromIndex: nextProps.fromIndex || this.props.fromIndex,
+    });
   }
   render() {
     var pages = null;
     if(this.state.size.width > 0 && this.state.size.width > 0) {
       var range = this._pagesRange(this.state);
-      pages = this._createPages(range);  
+      pages = this._createPages(range);
     }
     return (
-      <ScrollView 
+      <ScrollView
         {...this.props}
         ref={(scrollView) => {this._scrollView = scrollView}}
         onLayout={(e) => this._layoutChanged(e)}
@@ -73,7 +79,7 @@ export default class InfiniteScrollView extends Component {
     var scrollIndex = Math.round(this.props.horizontal ? event.nativeEvent.contentOffset.x / this.state.size.width : event.nativeEvent.contentOffset.y / this.state.size.height);
 
     var currentIndex = this.state.index;
-    var index = this.state.index + scrollIndex - Math.min(this._offscreenPages, this.state.index - this.state.fromIndex) - Math.max(0, this._offscreenPages + this.state.index - this.state.toIndex); 
+    var index = this.state.index + scrollIndex - Math.min(this._offscreenPages, this.state.index - this.state.fromIndex) - Math.max(0, this._offscreenPages + this.state.index - this.state.toIndex);
 
     if(index !== currentIndex && this.props.onPageIndexChange) {
       this.props.onPageIndexChange(index);
