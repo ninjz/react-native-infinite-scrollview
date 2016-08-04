@@ -1,5 +1,5 @@
-import React, {
-  Component,
+import React, { Component } from 'react';
+import {
   View,
   ScrollView,
 } from 'react-native';
@@ -40,6 +40,21 @@ export default class InfiniteScrollView extends Component {
     var scrollTo = {animated: false}
     if(this.props.horizontal) scrollTo.x = (this.state.index - this._renderedRange.from) * this.state.size.width;
     else scrollTo.y = (this.state.index - this._renderedRange.from) * this.state.size.height;
+    if (!this.state.scrollToTop) {
+      this._scrollView.scrollTo(scrollTo);
+    } else {
+      this.setState({scrollToTop: false})
+    }
+  }
+  scrollToTop() {
+    var scrollTo = {
+      animated: true,
+      y: 0,
+    }
+    this.setState({
+      index: 0,
+      scrollToTop: true
+    })
     this._scrollView.scrollTo(scrollTo);
   }
   componentWillReceiveProps(nextProps) {
