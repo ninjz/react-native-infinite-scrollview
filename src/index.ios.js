@@ -38,11 +38,14 @@ export default class InfiniteScrollView extends Component {
     var scrollTo = {animated: false}
     if(this.props.horizontal) scrollTo.x = (this.state.index - this._renderedRange.from) * this.state.size.width;
     else scrollTo.y = (this.state.index - this._renderedRange.from) * this.state.size.height;
+    /** New **/
     if (!this.state.scrollToTop) {
       this._scrollView.scrollTo(scrollTo);
     } else {
       this.setState({scrollToTop: false});
     }
+    /*!- End **/
+    // this._scrollView.scrollTo(scrollTo);
   }
   scrollToTop() {
     var scrollTo = {
@@ -61,7 +64,6 @@ export default class InfiniteScrollView extends Component {
       fromIndex: nextProps.fromIndex || this.props.fromIndex,
     });
   }
-
   render() {
     var pages = null;
     if(this.state.size.width > 0 && this.state.size.width > 0) {
@@ -99,15 +101,24 @@ export default class InfiniteScrollView extends Component {
     var currentIndex = this.state.index;
     var index = this.state.index + scrollIndex - Math.min(this._offscreenPages, this.state.index - this.state.fromIndex) - Math.max(0, this._offscreenPages + this.state.index - this.state.toIndex); 
 
-    if (index < 0) return; // return as we dont want to scroll under 0 index
+    if (index < 0) { // if less than 0, make sure we are in sync with scroll index.
+      index = scrollIndex;
+    }
+
+    if (scrollIndex === this.state.toIndex) { // If scrollIndex has reached toIndex we are definitely at the end of the index.
+      index = this.state.toIndex;
+    }
+
 
     if(index !== currentIndex && this.props.onPageIndexChange) {
       this.props.onPageIndexChange(index);
     }
 
     this.setState({index: index});
-
-    this.props.onMomentumScrollEnd && this.props.onMomentumScrollEnd(event, this.state, this)
+    
+    if(this.props.onMomentumScrollEnd) {
+      this.props.onMomentumScrollEnd(event);
+    }
   }
   _pagesRange(state) {
     var range = {};
